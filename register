@@ -1,0 +1,43 @@
+pip install discord.py
+import discord
+from discord.ext import commands
+
+intents = discord.Intents.default()
+intents.messages = True
+intents.guilds = True
+
+bot = commands.Bot(command_prefix='!', intents=intents)
+
+# Dictionary to store the registrations
+registrations = {}
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user}')
+
+@bot.command(name='register')
+async def register(ctx, department: str):
+    user = ctx.author
+    if not department:
+        await ctx.send(f'{user.mention}, you must specify a department to register.')
+        return
+
+    # Add or update the registration
+    registrations[user.id] = department
+    await ctx.send(f'{user.mention}, you have been registered under the {department} department.')
+
+@bot.command(name='registrations')
+async def list_registrations(ctx):
+    if not registrations:
+        await ctx.send('No one has registered yet.')
+        return
+
+    response = "Here are the current registrations:\n"
+    for user_id, department in registrations.items():
+        user = await bot.fetch_user(user_id)
+        response += f'{user.name}: {department}\n'
+
+    await ctx.send(response)
+
+# Replace 'YOUR_BOT_TOKEN' with your bot's token
+bot.run('YOUR_BOT_TOKEN')
